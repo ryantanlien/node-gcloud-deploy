@@ -74,7 +74,7 @@ We will be using the Google Cloud Dashboard to deploy the container. The Google 
     - Request Timeout: 60
     - Maximum concurrent requests per instance: 10 (Provision more if you need)
 
-*** Important Note***: For the rest of the settings, since this deployment is trivial and does not use any other cloud databases or require any additional provisioning of infrastructure, we won't need things such as environment variables and secrets. However, for a non-trivial example with other infrastructure such as load balancers and database access, the secrets and environment variables will have to be configured. (Please do not hardcode your GitHub or Cloud secrets into your application)
+⚠️Important Note: For the rest of the settings, since this deployment is trivial and does not use any other cloud databases or require any additional provisioning of infrastructure, we won't need things such as environment variables and secrets. However, for a non-trivial example with other infrastructure such as load balancers and database access, the secrets and environment variables will have to be configured. (Please do not hardcode your GitHub or Cloud secrets into your application)
 
 #### Accessing the endpoint
 6. Wait until the container is provisioned and deployed. 
