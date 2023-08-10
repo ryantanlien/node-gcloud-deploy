@@ -25,7 +25,7 @@ Please do use whatever software versions are comfortable for you. Do note howeve
 2. An understanding of how Docker works
 
 ## Deploying on Google Cloud Run with no Continous Deployment
-Lets say that you have an existing node application that you wish to deploy on Google Cloud. This node application can be containerized and deployed. 
+Lets say that you have an existing node application, preferably a microservice that you wish to deploy on Google Cloud. This node application can be containerized and deployed. 
 
 I will be using the trivial Express Node.js server in the `app` directory as the deployment example.
 
@@ -50,6 +50,33 @@ We will push built containers to the repository above.
 I used ryantanlien99/trivial-express:01 as the overall designation for the container and you will see it appear under the tags section in the repository.
 
 ### Deploying the Container to Google Cloud Run
-1. Go to Google Cloud Dashboard
+We will be using the Google Cloud Dashboard to deploy the container. The Google Cloud CLI can also be used but requires a lot more setup.
+
+1. Go to Google Cloud Dashboard.
 2. Go to Google Cloud Run
-3. Create a service and place `{dockerhubusername}/{app-name}:{tag-name}` as the Container URL when setting up the service. Google Cloud will automatically fetch the Docker Container for you.
+3. Create a service by clicking on the `Create Service Button` and place `{dockerhubusername}/{app-name}:{tag-name}` as the Container URL when setting up the service. Google Cloud will automatically fetch the Docker Container and deploy it once the service is created.
+
+#### General Deployment Settings
+4. Use the following settings for this example: (Intended for ease of use and low credit usage)
+    - Region: `asia-southeast1 (Singapore)`
+    - CPU allocation and pricing: `CPU is only allocated during request processing`
+    - Autoscaling:
+      - Minimum number of instances: 0
+      - Maximum number of instances: 1
+    - Ingress control: All (Required to access it on your browser without provisioning a load balancer)
+    - Authentication: Allow unauthenticated invocations (Required for now)
+
+#### Container, Networking and Security
+5. Use the following settings for this example
+    - General/Container port: 3000 (Should be whatever you specified in the Dockerfile if you used a custom config)
+    - Capcaity: 128 MiB (Provision more if you need)
+    - CPU: 1 (Provision more if you need)
+    - Request Timeout: 60
+    - Maximum concurrent requests per instance: 10 (Provision more if you need)
+
+*** Important Note***: For the rest of the settings, since this deployment is trivial and does not use any other cloud databases or require any additional provisioning of infrastructure, we won't need things such as environment variables and secrets. However, for a non-trivial example with other infrastructure such as load balancers and database access, the secrets and environment variables will have to be configured. (Please do not hardcode your GitHub or Cloud secrets into your application)
+
+#### Accessing the endpoint
+6. Wait until the container is provisioned and deployed. 
+7. Once it is, a link should appear. Hit that API endpoint and the following message should pop up: `hello world`
+8. If other endpoints in your application are exposed such as POST endpoints, then those would have to test those with Postman.
