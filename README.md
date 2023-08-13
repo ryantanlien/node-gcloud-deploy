@@ -24,6 +24,8 @@ Please do use whatever software versions are comfortable for you. Do note howeve
 1. Basic Docker commands
 2. An understanding of how Docker works
 
+❗ It is highly recommended that you learn how to deploy an application on Google Cloud without Continous Deployment first, to learn how the cloud framework works. Writing a script on GitHub Actions to deploy continously can be potentially destructive or extremely costly.
+
 ## Deploying on Google Cloud Run with no Continous Deployment
 Lets say that you have an existing node application, preferably a microservice that you wish to deploy on Google Cloud. This node application can be containerized and deployed. 
 
