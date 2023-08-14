@@ -13,8 +13,6 @@ on:
 jobs:
   push_trivial_express_container:
     # if: github.event.pull_request.merged == true
-    # Define environment (Below secrets are only defined)
-    environment:
     runs-on: ubuntu-latest
 
     steps:
@@ -41,6 +39,7 @@ jobs:
         tags: ryantanlien99/trivial-express:01
 
   deploy_trivial_express:
+    runs-on: ubuntu-latest
     permissions:
       contents: 'read'
       id-token: 'write'
