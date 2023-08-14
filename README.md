@@ -34,9 +34,11 @@ I will be using the trivial Express Node.js server in the `app` directory as the
 ### Creating a Docker Hub Repository
 1. Go to Docker Hub at https://hub.docker.com/
 2. Log in
-3. Create a public repository, preferably with the same name as your application. This will be the same name as your container.
+3. Create a public repository, preferably with the same name as your application. This will be the same name as your container. (Click create repository)
 
 We will push built containers to the repository above.
+
+![Alt text](docs/images/image.png)
 
 ### Building the Container
 - Navigate to the `app` directory or whichever folder your app is located in.
@@ -51,12 +53,17 @@ We will push built containers to the repository above.
 
 I used ryantanlien99/trivial-express:01 as the overall designation for the container and you will see it appear under the tags section in the repository.
 
+![Alt text](docs/images/image-1.png)
+
 ### Deploying the Container to Google Cloud Run
 We will be using the Google Cloud Dashboard to deploy the container. The Google Cloud CLI can also be used but requires a lot more setup.
 
 1. Go to Google Cloud Dashboard.
 2. Go to Google Cloud Run
+  ![Alt text](docs/images/image-2.png)
+
 3. Create a service by clicking on the `Create Service Button` and place `{dockerhubusername}/{app-name}:{tag-name}` as the Container URL when setting up the service. Google Cloud will automatically fetch the Docker Container and deploy it once the service is created.
+  ![Alt text](docs/images/image-3.png)
 
 #### General Deployment Settings
 4. Use the following settings for this example: (Intended for ease of use and low credit usage)
@@ -68,6 +75,8 @@ We will be using the Google Cloud Dashboard to deploy the container. The Google 
     - Ingress control: All (Required to access it on your browser without provisioning a load balancer)
     - Authentication: Allow unauthenticated invocations (Required for now)
 
+![Alt text](docs/images/image-4.png)
+
 #### Container, Networking and Security
 5. Use the following settings for this example
     - General/Container port: 3000 (Should be whatever you specified in the Dockerfile if you used a custom config)
@@ -75,6 +84,8 @@ We will be using the Google Cloud Dashboard to deploy the container. The Google 
     - CPU: 1 (Provision more if you need)
     - Request Timeout: 60
     - Maximum concurrent requests per instance: 10 (Provision more if you need)
+
+![Alt text](docs/images/image-5.png)
 
 ⚠️Important Note: For the rest of the settings, since this deployment is trivial and does not use any other cloud databases or require any additional provisioning of infrastructure, we won't need things such as environment variables and secrets. However, for a non-trivial example with other infrastructure such as load balancers and database access, the secrets and environment variables will have to be configured. (Please do not hardcode your GitHub or Cloud secrets into your application)
 
