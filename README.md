@@ -93,3 +93,58 @@ We will be using the Google Cloud Dashboard to deploy the container. The Google 
 6. Wait until the container is provisioned and deployed. 
 7. Once it is, a link should appear. Hit that API endpoint and the following message should pop up: `hello world`
 8. If other endpoints in your application are exposed such as POST endpoints, then those would have to test those with Postman.
+
+## Deploying on Google Cloud Run with Continous Deployment
+This section assumes that you have already tried a deployment on Google Cloud Run without Continous Deployment by following the steps above.
+
+### Additional Software/Accounts Required
+1. GitHub
+
+### GitHub Actions
+There are many continous deployment frameworks that one can use such as Jenkins or Google Cloud's own Cloud Build or GitHub Actions. Due to the accessibility and cost (it's free!) of GitHub Actions and GitHub, we will use GitHub Actions.
+
+GitHub Actions is simply a script configured using a YAML file that triggers when events we specify occur.
+
+For more information visit the [Official Documentation for GitHub Actions](https://docs.github.com/en/actions/learn-github-actions/understanding-github-actions)
+
+These scripts must be placed inside the directory location `./github/workflow` in your GitHub repository.
+
+We will place the script `cd-script.yml` inside this directory location.
+
+#### Continous Deployment YAML File
+The file that we use is outlined below:
+```
+
+```
+
+The script first builds your image to Docker Hub and then deploys it to Google Cloud Run using a custom GitHub Action Workflow called `deploy-cloudrun` which is maintained by OSS. 
+
+For more info on Docker and GitHub Actions visit: [Introduction to GitHub Actions](https://docs.docker.com/build/ci/github-actions) by Docker
+
+For more info about `deploy-cloudrun` visit: 
+
+We will only briefly go through some important key words. For a full list of what can be used, checkout the [Official Workflow Syntax for GitHub Actions](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
+
+**Generic GitHub Actions Syntax**
+
+- `name:` This sets the name of the workflow
+- `on:` This specifies the events that trigger the workflow  
+- `runs-on:` This specifies the operating system on which the job will run. We use`ubuntu-latest`, which represents the latest version of Ubuntu available on GitHub Actions.
+- `steps:` This section contains a list of steps to be executed in the job. Steps are the individual units of work that run commands or actions
+
+**Docker Specific GitHub Actions Syntax**
+
+This section applies to the steps: `Build and push` of the `deploy_trivial_express` job. 
+
+- The `with:` key lists a number of input parameters that configures the step:
+  - `context`: the build context.
+  - `file`: filepath to the Dockerfile.
+  - `push`: tells the action to upload the image to a registry after building it.
+  - `tags`: tags that specify where to push the image this is your Docker Hub Image designation.
+
+This next section applies to the steps `Log in to Docker Hub` of the `deploy_trivial_express job`.
+
+- The `with:` key lists a number of input parameters that configures the step:
+  - `username:` Docker Hub / Docker Desktop username
+  - `password:` Docker Hub / Docker Desktop password
+These are required for GitHub Actions to gain privileges to Docker Hub's API to push the image through automation for you.

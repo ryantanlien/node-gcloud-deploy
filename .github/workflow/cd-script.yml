@@ -1,0 +1,43 @@
+name: CD
+
+# Controls when the action will run. Triggers the workflow on push 
+# events but only for the master branch
+on: 
+  pull_request:
+    types:
+      - closed
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy_trivial_express:
+    if: github.event.pull_request.merged == true
+    # Define environment (Below secrets are only defined)
+    environment:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the repo
+      uses: actions/checkout@v3
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with: 
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./app
+        push: true
+        tags: ryantanlien99/trivial-express:01
+
+    
