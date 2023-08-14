@@ -12,7 +12,7 @@ on:
 
 jobs:
   deploy_trivial_express:
-    if: github.event.pull_request.merged == true
+    # if: github.event.pull_request.merged == true
     # Define environment (Below secrets are only defined)
     environment:
     runs-on: ubuntu-latest
