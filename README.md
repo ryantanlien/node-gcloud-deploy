@@ -107,7 +107,7 @@ GitHub Actions is simply a script configured using a YAML file that triggers whe
 
 For more information visit the [Official Documentation for GitHub Actions](https://docs.github.com/en/actions/learn-github-actions/understanding-github-actions)
 
-These scripts must be placed inside the directory location `./github/workflow` in your GitHub repository.
+These scripts must be placed inside the directory location `./github/workflows` in your GitHub repository.
 
 We will place the script `cd-script.yml` inside this directory location.
 
