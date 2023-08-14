@@ -57,5 +57,5 @@ jobs:
       uses: 'google-github-actions/deploy-cloudrun@v1'
       with:
         service: 'trivial-express'
-        image: 'docker.io/ryantanlien99/trivial-express'
+        image: 'docker.io/ryantanlien99/trivial-express:01'
     
