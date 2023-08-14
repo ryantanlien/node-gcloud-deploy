@@ -39,6 +39,7 @@ jobs:
         tags: ryantanlien99/trivial-express:01
 
   deploy_trivial_express:
+    needs: push_trivial_express_container
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'

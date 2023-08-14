@@ -101,8 +101,13 @@ This section assumes that you have already tried a deployment on Google Cloud Ru
 1. GitHub
 
 ### Additional Configuration to be Performed on Google Cloud
+This section contains sensitive information and so screenshots will be minimal.
 1. Enable IAM for your Google Cloud Run Project
 2. Obtain the Service User Account ID for your Google Cloud Run Project (We will need this later)
+  - It's ID is under the `Principal` field
+3. Make the Service User Account a Service Account Token Creator (We will need this later)
+  - Go to IAM & Admin section of Google Cloud and click on the pencil icon next the the automatically generated service account.
+  - Add a new Role to it called Service Account Token Creator.
 
 ### Additional Configuration to be Performed on GitHub
 1. Add your Service User Account ID for your Google Cloud Run Project as a Secret in your GitHub Repository.
@@ -139,8 +144,6 @@ on:
 jobs:
   push_trivial_express_container:
     # if: github.event.pull_request.merged == true
-    # Define environment (Below secrets are only defined)
-    environment:
     runs-on: ubuntu-latest
 
     steps:
@@ -167,6 +170,8 @@ jobs:
         tags: ryantanlien99/trivial-express:01
 
   deploy_trivial_express:
+    needs: push_trivial_express_container
+    runs-on: ubuntu-latest
     permissions:
       contents: 'read'
       id-token: 'write'
@@ -200,6 +205,7 @@ We will only briefly go through some important key words. For a full list of wha
 - `runs-on:` This specifies the operating system on which the job will run. We use`ubuntu-latest`, which represents the latest version of Ubuntu available on GitHub Actions.
 - `jobs:` This section defines one or more jobs for the workflow. Each job represents a set of steps that run on the same runner.
 - `steps:` This section contains a list of steps to be executed in the job. Steps are the individual units of work that run commands or actions.
+- `needs:` This specifies dependencies between jobs.
 
 **Docker Specific GitHub Actions Syntax**
 
