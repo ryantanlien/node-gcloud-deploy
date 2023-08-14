@@ -95,10 +95,20 @@ We will be using the Google Cloud Dashboard to deploy the container. The Google 
 8. If other endpoints in your application are exposed such as POST endpoints, then those would have to test those with Postman.
 
 ## Deploying on Google Cloud Run with Continous Deployment
-This section assumes that you have already tried a deployment on Google Cloud Run without Continous Deployment by following the steps above.
+This section assumes that you have already tried a deployment on Google Cloud Run without Continous Deployment by following the steps above. It will also assume that you already have a Google Cloud Run service setup appropiately, and hence this Continous Deployment Script only creates new revisions of the service by uploading new containers.
 
 ### Additional Software/Accounts Required
 1. GitHub
+
+### Additional Configuration to be Performed on Google Cloud
+1. Enable IAM for your Google Cloud Run Project
+2. Obtain the Service User Account ID for your Google Cloud Run Project (We will need this later)
+
+### Additional Configuration to be Performed on GitHub
+1. Add your Service User Account ID for your Google Cloud Run Project as a Secret in your GitHub Repository.
+2. Add your Docker User Name and Password for as Secrets in your GitHub Repository.
+
+![Alt text](docs/images/image-6.png)
 
 ### GitHub Actions
 There are many continous deployment frameworks that one can use such as Jenkins or Google Cloud's own Cloud Build or GitHub Actions. Due to the accessibility and cost (it's free!) of GitHub Actions and GitHub, we will use GitHub Actions.
@@ -113,11 +123,69 @@ We will place the script `cd-script.yml` inside this directory location.
 
 #### Continous Deployment YAML File
 The file that we use is outlined below:
+``` YAML
+name: CD
+
+# Controls when the action will run. Triggers the workflow on push 
+# events but only for the master branch
+on: 
+  pull_request:
+    types:
+      - closed
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  push_trivial_express_container:
+    # if: github.event.pull_request.merged == true
+    # Define environment (Below secrets are only defined)
+    environment:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the repo
+      uses: actions/checkout@v3
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with: 
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./app
+        push: true
+        tags: ryantanlien99/trivial-express:01
+
+  deploy_trivial_express:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - uses: 'actions/checkout@v3'
+
+    - uses: 'google-github-actions/auth@v1'
+      with:
+        service_account: '${{ secrets.GCLOUD_SERVICE_ACCOUNT}}'
+
+    - id: 'deploy'
+      uses: 'google-github-actions/deploy-cloudrun@v1'
+      with:
+        service: 'trivial-express'
+        image: 'docker.io/ryantanlien99/trivial-express'
 ```
 
-```
-
-The script first builds your image to Docker Hub and then deploys it to Google Cloud Run using a custom GitHub Action Workflow called `deploy-cloudrun` which is maintained by OSS. 
+The script first builds your image to Docker Hub and then deploys it to Google Cloud Run using a custom GitHub Action Workflow called `deploy-cloudrun` which is maintained by OSS. Details on what the script does can be inferred from the key syntax provided below.
 
 For more info on Docker and GitHub Actions visit: [Introduction to GitHub Actions](https://docs.docker.com/build/ci/github-actions) by Docker
 
@@ -127,14 +195,15 @@ We will only briefly go through some important key words. For a full list of wha
 
 **Generic GitHub Actions Syntax**
 
-- `name:` This sets the name of the workflow
-- `on:` This specifies the events that trigger the workflow  
+- `name:` This sets the name of the workflow.
+- `on:` This specifies the events that trigger the workflow.
 - `runs-on:` This specifies the operating system on which the job will run. We use`ubuntu-latest`, which represents the latest version of Ubuntu available on GitHub Actions.
-- `steps:` This section contains a list of steps to be executed in the job. Steps are the individual units of work that run commands or actions
+- `jobs:` This section defines one or more jobs for the workflow. Each job represents a set of steps that run on the same runner.
+- `steps:` This section contains a list of steps to be executed in the job. Steps are the individual units of work that run commands or actions.
 
 **Docker Specific GitHub Actions Syntax**
 
-This section applies to the steps: `Build and push` of the `deploy_trivial_express` job. 
+This section applies to the steps: `Build and push` of the `push_trivial_express_container` job. 
 
 - The `with:` key lists a number of input parameters that configures the step:
   - `context`: the build context.
@@ -142,9 +211,17 @@ This section applies to the steps: `Build and push` of the `deploy_trivial_expre
   - `push`: tells the action to upload the image to a registry after building it.
   - `tags`: tags that specify where to push the image this is your Docker Hub Image designation.
 
-This next section applies to the steps `Log in to Docker Hub` of the `deploy_trivial_express job`.
+This next section applies to the steps `Log in to Docker Hub` of the `push_trivial_express_container` job.
 
 - The `with:` key lists a number of input parameters that configures the step:
-  - `username:` Docker Hub / Docker Desktop username
-  - `password:` Docker Hub / Docker Desktop password
+  - `username:` Docker Hub / Docker Desktop username.
+  - `password:` Docker Hub / Docker Desktop password.
 These are required for GitHub Actions to gain privileges to Docker Hub's API to push the image through automation for you.
+
+**Deploy Cloud Run GitHub Actions Syntax**
+
+This next section applies to the steps `deploy` of the `deploy_trivial_express` job.
+
+- `service account:` The service account configured by Google Cloud IAM API to be able to access Google Cloud from third party applications.
+- `service:` Name of the Google Cloud Run Service that you wish to deploy on.
+- `image:` Fully qualified URL of the image to be deployed.
