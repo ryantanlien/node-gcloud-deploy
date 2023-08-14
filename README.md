@@ -108,10 +108,11 @@ This section contains sensitive information and so screenshots will be minimal.
 3. Make the Service User Account a Service Account Token Creator (We will need this later)
   - Go to IAM & Admin section of Google Cloud and click on the pencil icon next the the automatically generated service account.
   - Add a new Role to it called Service Account Token Creator.
+4. Generate a Service Key for the Google Cloud Service Account and add it as a Secret in your GitHub Repository as `SERVICE_JSON`.
 
 ### Additional Configuration to be Performed on GitHub
 1. Add your Service User Account ID for your Google Cloud Run Project as a Secret in your GitHub Repository.
-2. Add your Docker User Name and Password for as Secrets in your GitHub Repository.
+2. Add your Docker User Name and Password for as Secrets in your GitHub Repository as `DOCKER_USERNAME` and `DOCKER_PASSWORD`
 
 ![Alt text](docs/images/image-6.png)
 
@@ -231,3 +232,4 @@ This next section applies to the steps `deploy` of the `deploy_trivial_express` 
 - `service account:` The service account configured by Google Cloud IAM API to be able to access Google Cloud from third party applications.
 - `service:` Name of the Google Cloud Run Service that you wish to deploy on.
 - `image:` Fully qualified URL of the image to be deployed.
+- `credentials_json` JSON of the Service Key generated for the Service Account
