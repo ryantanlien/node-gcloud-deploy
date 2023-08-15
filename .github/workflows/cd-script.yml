@@ -62,7 +62,7 @@ jobs:
         project: '${{ secrets.GCLOUD_RUN_PROJECT_ID }}'
     
     - name: 'Describe trivial-express service'
-      run: 'gcloud run services describe trivial-express --format export > service.yaml'
+      run: 'gcloud run services describe trivial-express --region asia-southeast1 --format export > service.yaml'
 
     - name: 'Log service.yaml contents'
       run: 'cat service.yaml'
