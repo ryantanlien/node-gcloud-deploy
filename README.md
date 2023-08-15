@@ -267,16 +267,30 @@ This sections run Google Cloud CLI commands on the project specified above. It e
 ## Conclusion
 Congratulations! You have now completed the entire guide on how to deploy your Node.js application/microservice to Google Cloud Run with and without Continous Deployment. Hopefully this has enlightened you how to use Google Cloud Run and GitHub Actions to automate your workflows! 
 
-### Follow-up challenges
+⚠️ This guide was written by consulting many of the references listed below. For a more in-depth understanding of how to setup your own personalized workflows, or if you require a clearer understanding, do read the same references.
+
+## Follow-up challenges
 Here are some follow-up challenges that will help to enhance your learning on the subject.
 
-## Exercise 1: Deploy a new revision of the service
+### Exercise 1: Deploy a new revision of the service
 Change the logic of your application and expose a new endpoint. Then run this workflow in your repository and test whether the container containing your new application has been updated on Google Cloud Run.
 
-## Exercise 2: Change this script to deploy a new service if it does not exist
+### Exercise 2: Change this script to deploy a new service if it does not exist
 Hint: use the [deploy-cloud-run](https://github.com/google-github-actions/deploy-cloudrun) GitHub Action and scripting to alter/create the contents of Google Cloud Service YAML. See: [Cloud Run Official Documentation: Deploying a new service](https://cloud.google.com/run/docs/deploying#service).
 
 To check if the service exists use scripting with the `run` keyword.
 
-## Exercise 3: Change this script to only activate on a closed pull request that merged to master.
+### Exercise 3: Change this script to only activate on a closed pull request that merged to master.
 Hint: use the `if` keyword on the `push_express_container` and `deploy_trivial_express` jobs.
+
+## References
+- [Introduction to GitHub Actions](https://docs.docker.com/build/ci/github-actions)
+- [Google Cloud Documentation: Create and delete service account keys](https://cloud.google.com/iam/docs/keys-create-delete)
+- [Google Cloud Documentation: Manage Service Accounts](https://cloud.google.com/iam/docs/manage-access-service-accounts)
+- [Cloud Run Official Documentation: Deploying a new revision](https://cloud.google.com/run/docs/deploying#revision)
+- [Cloud Run Official Documentation: Deploying a new service](https://cloud.google.com/run/docs/deploying#service)
+- [Cloud Run Official Documentation: Configure Containers](https://cloud.google.com/run/docs/configuring/services/containers)
+- [Google Cloud SDK Reference](https://cloud.google.com/sdk/gcloud/reference)
+- [Official Workflow Syntax for GitHub Actions](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
+- [google-github-actions/auth](https://github.com/google-github-actions/auth)
+- [google-github-actions/setup-gloud](https://github.com/google-github-actions/setup-gcloud)
