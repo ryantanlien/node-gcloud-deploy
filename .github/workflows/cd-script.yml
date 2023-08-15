@@ -59,14 +59,17 @@ jobs:
       uses: 'google-github-actions/setup-gcloud@v1'
       with:
         version: 'latest'
-        project: 'igneous-access-395514'
+        project: '${{ GCLOUD_RUN_PROJECT_ID }}'
     
-    - name: 'Use gcloud CLI'
-      run: 'gcloud info'
+    - name: 'Describe trivial-express service'
+      run: 'gcloud run services describe trivial-express --format export > service.yaml'
 
-    - id: 'deploy'
-      uses: 'google-github-actions/deploy-cloudrun@v1'
-      with:
-        service: 'trivial-express'
-        image: 'docker.io/ryantanlien99/trivial-express:01'
+    - name: 'Log service.yaml contents'
+      run: 'cat service.yaml'
+
+    # - id: 'deploy'
+    #   uses: 'google-github-actions/deploy-cloudrun@v1'
+    #   with:
+    #     service: 'trivial-express'
+    #     image: 'docker.io/ryantanlien99/trivial-express:01'
     
