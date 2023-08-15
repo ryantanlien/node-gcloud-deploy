@@ -61,11 +61,11 @@ jobs:
         version: 'latest'
         project: '${{ secrets.GCLOUD_RUN_PROJECT_ID }}'
     
-    - name: 'Describe trivial-express service'
+    - name: 'Download trivial-express YAML configuration file'
       run: 'gcloud run services describe trivial-express --region asia-southeast1 --format export > service.yaml'
 
-    - name: 'Log service.yaml contents'
-      run: 'cat service.yaml'
+    - name: 'Redeploy trivial-express service with new revision'
+      run: 'gcloud run services replaced service.yaml'
 
     # - id: 'deploy'
     #   uses: 'google-github-actions/deploy-cloudrun@v1'
