@@ -100,26 +100,28 @@ This section assumes that you have already tried a deployment on Google Cloud Ru
 ### Additional Software/Accounts Required
 1. GitHub
 
-### Additional Configuration to be Performed on Google Cloud
+### Additional Configuration to be Performed (Google Cloud and GitHub Repository Secrets)
 This section contains sensitive information and so screenshots will be minimal.
 1. Enable IAM for your Google Cloud Run Project
 2. Obtain the Service User Account ID for your Google Cloud Run Project (We will need this later)
-  - It's ID is under the `Principal` field
+    - It's ID is under the `Principal` field
+    - Add your Service User Account ID for your Google Cloud Run Project as a Secret in your GitHub Repository.
+3. Obtain the ID for the Google Cloud Run Project and add it as a Secret in your GitHub Repository.
 3. Make the Service User Account a Service Account Token Creator (We will need this later)
-  - Go to IAM & Admin section of Google Cloud and click on the pencil icon next the the automatically generated service account.
-  - Add a new Role to it called Service Account Token Creator.
+    - Go to IAM & Admin section of Google Cloud Dashboard and click on the pencil icon next the the automatically generated service account.
+    - Add a new Role to it called Service Account Token Creator.
 4. Generate a Service Key for the Google Cloud Service Account and add it as a Secret in your GitHub Repository as `SERVICE_JSON`.
+    - Got to IAM & Admin section of Google Cloud Dashboard and click on Service Accounts on the lefthand sidebar. Click more Actions and Click Manage keys. Add a Key
+    - More info can be found [here](https://cloud.google.com/iam/docs/keys-create-delete)
+5. Add your Docker User Name and Password for as Secrets in your GitHub Repository as `DOCKER_USERNAME` and `DOCKER_PASSWORD`
 
-### Additional Configuration to be Performed on GitHub
-1. Add your Service User Account ID for your Google Cloud Run Project as a Secret in your GitHub Repository.
-2. Add your Docker User Name and Password for as Secrets in your GitHub Repository as `DOCKER_USERNAME` and `DOCKER_PASSWORD`
-
+#### Adding Secrets to GitHub Repository
 ![Alt text](docs/images/image-6.png)
 
 ### GitHub Actions
 There are many continous deployment frameworks that one can use such as Jenkins or Google Cloud's own Cloud Build or GitHub Actions. Due to the accessibility and cost (it's free!) of GitHub Actions and GitHub, we will use GitHub Actions.
 
-GitHub Actions is simply a script configured using a YAML file that triggers when events we specify occur.
+GitHub Actions is simply a script configured using a YAML file that triggers when events we specify occur, running on a remote virtual machine is provisioned for us.
 
 For more information visit the [Official Documentation for GitHub Actions](https://docs.github.com/en/actions/learn-github-actions/understanding-github-actions)
 
@@ -178,28 +180,43 @@ jobs:
       id-token: 'write'
 
     steps:
-    - uses: 'actions/checkout@v3'
+    - name: 'Check out the Repo'
+      uses: 'actions/checkout@v3'
 
-    - uses: 'google-github-actions/auth@v1'
+    - name: 'Authenticate Google Cloud'
+      uses: 'google-github-actions/auth@v1'
       with:
         service_account: '${{ secrets.GCLOUD_SERVICE_ACCOUNT}}'
+        credentials_json:  '${{ secrets.SERVICE_JSON }}'
 
-    - id: 'deploy'
-      uses: 'google-github-actions/deploy-cloudrun@v1'
+    - name: 'Set up Google SDK'
+      uses: 'google-github-actions/setup-gcloud@v1'
       with:
-        service: 'trivial-express'
-        image: 'docker.io/ryantanlien99/trivial-express'
+        version: 'latest'
+        project: '${{ secrets.GCLOUD_RUN_PROJECT_ID }}'
+    
+    - name: 'Download trivial-express YAML configuration file'
+      run: 'gcloud run services describe trivial-express --region asia-southeast1 --format export > service.yaml'
+
+    - name: 'Redeploy trivial-express service with new revision'
+      run: 'gcloud run services replace service.yaml'
 ```
 
-The script first builds your image to Docker Hub and then deploys it to Google Cloud Run using a custom GitHub Action Workflow called `deploy-cloudrun` which is maintained by OSS. Details on what the script does can be inferred from the key syntax provided below.
+The script first builds your image to Docker Hub and then deploys it to Google Cloud Run using the Google CLI.
+- In order to use the Google CLI in our action, we will first have to authenticate Google Cloud. For Authentication, we will use the `google-github-actions/auth` GitHub Actions. 
+- After authentication, we will have to setup the Google Cloud CLI in the virtual machine running our GitHub Action Script. We will use the `google-github-actions/setup-gcloud` GitHub Action to install the Google Cloud CLI. Details on what the script does can be inferred from the key syntax provided below.
+- Once that is done, we will use the Google Cloud CLI to regenerate the Service Configuration YAML file of our Google Cloud Run Service which triggers a new deployment of the service.
 
 For more info on Docker and GitHub Actions visit: [Introduction to GitHub Actions](https://docs.docker.com/build/ci/github-actions) by Docker
 
-For more info about `deploy-cloudrun` visit: 
+For more info on Google Cloud CLI, visit: [Google Cloud SDK Reference](https://cloud.google.com/sdk/gcloud/reference)
 
-We will only briefly go through some important key words. For a full list of what can be used, checkout the [Official Workflow Syntax for GitHub Actions](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
+For more info about the GitHub Actions used above visit [google-github-actions/auth](https://github.com/google-github-actions/auth) and [google-github-actions/setup-gloud](https://github.com/google-github-actions/setup-gcloud)
 
-**Generic GitHub Actions Syntax**
+
+We will only briefly go through some important key words. For a full list of what can be used, checkout the [Official Workflow Syntax for GitHub Actions](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions), as well as the documentation listed above.
+
+#### Generic GitHub Actions Syntax
 
 - `name:` This sets the name of the workflow.
 - `on:` This specifies the events that trigger the workflow.
@@ -208,7 +225,7 @@ We will only briefly go through some important key words. For a full list of wha
 - `steps:` This section contains a list of steps to be executed in the job. Steps are the individual units of work that run commands or actions.
 - `needs:` This specifies dependencies between jobs.
 
-**Docker Specific GitHub Actions Syntax**
+#### Docker Specific GitHub Actions Syntax
 
 This section applies to the steps: `Build and push` of the `push_trivial_express_container` job. 
 
@@ -225,11 +242,41 @@ This next section applies to the steps `Log in to Docker Hub` of the `push_trivi
   - `password:` Docker Hub / Docker Desktop password.
 These are required for GitHub Actions to gain privileges to Docker Hub's API to push the image through automation for you.
 
-**Deploy Cloud Run GitHub Actions Syntax**
+#### Deploy Cloud Run GitHub Actions Syntax
+- Syntax pertaining to `Authenticate Google Cloud Step`
+  - `service account:` The service account configured by Google Cloud IAM API to be able to access Google Cloud from third party applications.
+  - `credentials_json` JSON of the Service Key generated for the Service Account
 
-This next section applies to the steps `deploy` of the `deploy_trivial_express` job.
+- Syntax pertaining to `Set up Google SDK`
+  - `version:` The version of Google Cloud CLI that we are installing
+  - `project:` The project id of the project that we wish to run Google Cloud CLI commands. This can be overwritten by the command flags.
 
-- `service account:` The service account configured by Google Cloud IAM API to be able to access Google Cloud from third party applications.
-- `service:` Name of the Google Cloud Run Service that you wish to deploy on.
-- `image:` Fully qualified URL of the image to be deployed.
-- `credentials_json` JSON of the Service Key generated for the Service Account
+#### Google Cloud CLI Commands Explanation
+This section is adapted from the [Cloud Run Official Documentation: Deploying a new revision](https://cloud.google.com/run/docs/deploying#revision)
+
+This sections run Google Cloud CLI commands on the project specified above. It essentially downloads the existing configuration YAML of the Google Cloud Run Service that we have setup and reuploads it, forcing an update of the container image.
+
+- Explanation of commands in `Download trivial-express YAML configuration file` 
+  - We specify the region of our service with `--region` flag for gcloud to locate the service. 
+  - We then format and export the output of the gcloud service description to our virtual machine environment with `export > service.yaml`
+
+- Explanation of commands in `Redeploy trivial-express service with new revision`
+  - We simply replace the existing service configuration file in the cloud service with the one we have downloaded, forcing a redeployment of the service. If the container image is updated in earlier steps (which it is), it deploys the new container to the service.
+  - For more info about the commands and available flags, visit: [Google Cloud SDK Reference](https://cloud.google.com/sdk/gcloud/reference)
+
+## Conclusion
+Congratulations! You have now completed the entire guide on how to deploy your Node.js application/microservice to Google Cloud Run with and without Continous Deployment. Hopefully this has enlightened you how to use Google Cloud Run and GitHub Actions to automate your workflows! 
+
+### Follow-up challenges
+Here are some follow-up challenges that will help to enhance your learning on the subject.
+
+## Exercise 1: Deploy a new revision of the service
+Change the logic of your application and expose a new endpoint. Then run this workflow in your repository and test whether the container containing your new application has been updated on Google Cloud Run.
+
+## Exercise 2: Change this script to deploy a new service if it does not exist
+Hint: use the [deploy-cloud-run](https://github.com/google-github-actions/deploy-cloudrun) GitHub Action and scripting to alter/create the contents of Google Cloud Service YAML. See: [Cloud Run Official Documentation: Deploying a new service](https://cloud.google.com/run/docs/deploying#service).
+
+To check if the service exists use scripting with the `run` keyword.
+
+## Exercise 3: Change this script to only activate on a closed pull request that merged to master.
+Hint: use the `if` keyword on the `push_express_container` and `deploy_trivial_express` jobs.

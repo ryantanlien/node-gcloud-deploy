@@ -12,7 +12,6 @@ on:
 
 jobs:
   push_trivial_express_container:
-    # if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
@@ -66,10 +65,4 @@ jobs:
 
     - name: 'Redeploy trivial-express service with new revision'
       run: 'gcloud run services replace service.yaml'
-
-    # - id: 'deploy'
-    #   uses: 'google-github-actions/deploy-cloudrun@v1'
-    #   with:
-    #     service: 'trivial-express'
-    #     image: 'docker.io/ryantanlien99/trivial-express:01'
     
