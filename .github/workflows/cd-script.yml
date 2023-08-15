@@ -59,7 +59,7 @@ jobs:
       uses: 'google-github-actions/setup-gcloud@v1'
       with:
         version: 'latest'
-        project: '${{ GCLOUD_RUN_PROJECT_ID }}'
+        project: '${{ secrets.GCLOUD_RUN_PROJECT_ID }}'
     
     - name: 'Describe trivial-express service'
       run: 'gcloud run services describe trivial-express --format export > service.yaml'
